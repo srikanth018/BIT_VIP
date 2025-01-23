@@ -11,3 +11,12 @@ exports.createRoom = async (req, res) => {
         res.status(500).json({ message: 'Error creating room', error: error.message });
     }
 };
+
+exports.getRooms = async (req, res) => {
+    try {
+        const rooms = await Room.findAll(); // Fetch all room records
+        res.status(200).json(rooms);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching rooms', error: error.message });
+    }
+};

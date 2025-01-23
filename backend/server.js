@@ -1,12 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // Import cors
 const sequelize = require('./config/db');
-const roomRoutes = require('./routes/roomRoutes');
+const roomRoutes = require('./routes/v1/roomRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
 // Middleware
+app.use(cors()); // Enable CORS
 app.use(bodyParser.json());
 app.use('/api', roomRoutes);
 

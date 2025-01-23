@@ -60,7 +60,7 @@ const Sidebar = ({ userRole }) => {
   };
 
   return ( 
-    <div className="w-80 h-screen bg-white text-black ">
+    <div className="w-80  bg-white text-black ">
       <div className="p-4 my-2 text-center font-bold text-2xl text-sky-600">
         BIT-VIP
       </div>
