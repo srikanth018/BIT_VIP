@@ -59,8 +59,8 @@ const Sidebar = ({ userRole }) => {
     return active === name ? "bg-sky-100 text-sky-600" : "text-gray-600";
   };
 
-  return (
-    <div className="w-80 h-screen bg-white text-black">
+  return ( 
+    <div className="w-80 h-screen bg-white text-black ">
       <div className="p-4 my-2 text-center font-bold text-2xl text-sky-600">
         BIT-VIP
       </div>

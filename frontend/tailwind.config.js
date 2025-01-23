@@ -1,10 +1,12 @@
+// tailwind.config.js
 module.exports = {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./src/**/*.{js,jsx,ts,tsx}"], // Adjust paths as needed
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        cambria: ['Cambria', 'serif'], // Add Cambria font family
+      },
+    },
   },
   plugins: [],
 };

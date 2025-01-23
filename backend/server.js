@@ -1,27 +1,21 @@
 const express = require('express');
-const mysql = require('mysql2');
-require('dotenv').config();
+const bodyParser = require('body-parser');
+const sequelize = require('./config/db');
+const roomRoutes = require('./routes/roomRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// // Example MySQL connection
-// const db = mysql.createConnection({
-//   host: process.env.DB_HOST,
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASS,
-//   database: process.env.DB_NAME,
-// });
+// Middleware
+app.use(bodyParser.json());
+app.use('/api', roomRoutes);
 
-// db.connect(err => {
-//   if (err) console.error('Database connection error:', err);
-//   else console.log('Connected to the database');
-// });
+// Sync Database
+sequelize.sync({ alter: true }) // Automatically create/alter tables based on models
+    .then(() => console.log('Database synchronized'))
+    .catch((err) => console.error('Error synchronizing database:', err));
 
-app.get('/', (req, res) => {
-  res.send('Backend server running');
-});
-
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

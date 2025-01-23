@@ -1,31 +1,39 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import './index.css';
-import './App.css';
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import "./App.css";
+import "./index.css";
 
-import Login from './Components/Login';
-import Sidebar from './Components/Helpers/Sidebar';
-import Header from './Components/Helpers/Header';
+import Header from "./Components/Helpers/Header";
+import Sidebar from "./Components/Helpers/Sidebar";
+import Login from "./Components/Login";
+import BookSlots from "./Components/BookSlots/BookSlots.jsx";
 
 function App() {
   const userRole = "faculty";
+
   return (
     <Router>
-      <div className="flex">
-        {/* Sidebar component on the left */}
-        <Sidebar userRole={userRole} /> {/* Pass userRole as required */}
-        
-        {/* Main content area */}
-        <div className="flex-1">
-        <Header userRole={userRole} />
-          <Routes>
-            <Route path="/" element={<Login />} />
-            {/* Add other routes here */}
-            <Route path="/dashboard" element={<div>Dashboard Content</div>} />
-            <Route path="/profile" element={<div>Profile Content</div>} />
-            {/* Add more routes for admin, faculty, etc. */}
-          </Routes>
-        </div>
-      </div>
+      <Routes>
+        {/* Standalone Login Route */}
+        <Route path="/" element={<Login />} />
+
+        {/* Routes with Layout */}
+        <Route
+          path="*"
+          element={
+            <div className="flex">
+              <Sidebar userRole={userRole} />
+              <div className="flex-1">
+                <Header userRole={userRole} />
+                <Routes>
+                  <Route path="/dashboard" element={<div>Dashboard Content</div>} />
+                  <Route path="/profile" element={<div>Profile Content</div>} />
+                  <Route path="/book-slot" element={<BookSlots/> } />
+                </Routes>
+              </div>
+            </div>
+          }
+        />
+      </Routes>
     </Router>
   );
 }
