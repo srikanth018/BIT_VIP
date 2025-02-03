@@ -75,7 +75,8 @@ function BookSlots() {
     placeholder: (provided) => ({
       ...provided,
       color: "#0ea5e9",
-      fontWeight: "600",
+      // fontWeight: "600",
+      fontSize: "15px",
     }),
     singleValue: (provided) => ({
       ...provided,
@@ -230,7 +231,7 @@ function BookSlots() {
               <input
                 type="number"
                 placeholder="Enter Capacity"
-                className="p-2 border-2 text-lg text-sky-500 font-semibold placeholder:text-sky-500 border-sky-500 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-sky-500 focus:shadow-sm focus:shadow-sky-300 focus:placeholder-sky-500 focus:placeholder:font-semibold focus:text-sky-600 focus:border"
+                className="p-2 border-2 text-lg text-sky-500 font-semibold placeholder:text-sky-500 placeholder:text-base placeholder:font-normal border-sky-500 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-sky-500 focus:shadow-sm focus:shadow-sky-300 focus:placeholder-sky-500 focus:placeholder:font-semibold focus:text-sky-600 focus:border"
                 value={capacity}
                 onChange={(e) => setCapacity(e.target.value)}
               />

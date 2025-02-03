@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors'); // Import cors
 const sequelize = require('./config/db');
 const roomRoutes = require('./routes/v1/roomRoutes');
+const bookingRoutes = require('./routes/v1/bookingsRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -11,6 +12,9 @@ const PORT = process.env.PORT || 8000;
 app.use(cors()); // Enable CORS
 app.use(bodyParser.json());
 app.use('/api', roomRoutes);
+app.use('/api', bookingRoutes);
+
+
 
 // Sync Database
 sequelize.sync({ alter: true }) // Automatically create/alter tables based on models
