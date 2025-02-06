@@ -6,6 +6,7 @@ import Header from "./Components/Helpers/Header";
 import Sidebar from "./Components/Helpers/Sidebar";
 import Login from "./Components/Login";
 import BookSlots from "./Components/BookSlots/BookSlots.jsx";
+import Bookings from "./Components/My_Bookings/Bookings.jsx";
 
 function App() {
   const userRole = "faculty";
@@ -28,6 +29,7 @@ function App() {
                   <Route path="/dashboard" element={<div>Dashboard Content</div>} />
                   <Route path="/profile" element={<div>Profile Content</div>} />
                   <Route path="/book-slot" element={<BookSlots/> } />
+                  <Route path="/my-bookings" element={<Bookings/>} />
                 </Routes>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { use } from "react";
 
 function VenueDetails({
   formValues,
@@ -11,6 +12,11 @@ function VenueDetails({
   const [selectedRooms, setSelectedRooms] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [showPopup, setShowPopup] = useState(false);
+  const [facultyName, setFacultyName] = useState("");
+  const [facultyID, setFacultyID] = useState("");
+  const [courseCode, setCourseCode] = useState("");
+  const [sessionType, setSessionType] = useState("");
+  const [resourceNeeds, setResourceNeeds] = useState("");
 
   useEffect(() => {
     const fetchAvailableRooms = async () => {
@@ -92,24 +98,82 @@ function VenueDetails({
     }
   };
 
-  const handleBookSlots = () => {
-    const bookingDetails = {
-      facultyName, // Capture from the input field
-      facultyID,
-      courseCode,
-      sessionType,
-      resourceNeeds,
-      recurringOption,
-      rooms: selectedRooms,
-    };
 
-    // Send bookingDetails to the backend
-    console.log("Booking Details:", bookingDetails);
+  // useEffect(() => {
+  //   const updateFormValues = async () => {
+  //     if(showPopup) {
+  //       setFacultyName("");
+  //       setFacultyID("");
+  //       setCourseCode("");
+  //       setSessionType("");
+  //       setResourceNeeds("");
+  //     }
 
-    alert(`Booking slots for Rooms: ${bookingDetails}`);
-    setSelectedRooms([]);
-    setShowPopup(false);
+  //   };
+  //   updateFormValues();
+  // }, [showPopup]);
+
+  const handleBookSlots = async () => {
+    if (!facultyName || !facultyID || !courseCode || !sessionType || !resourceNeeds || !formValues.date || !formValues.fromTime || !formValues.toTime) {
+      setErrorMessage("Please fill in all required fields.");
+      return;
+    }
+  
+    if (selectedRooms.length === 0) {
+      setErrorMessage("Please select at least one room.");
+      return;
+    }
+  
+    try {
+      const bookingRequests = selectedRooms.map((room) => {
+        if (!room.RoomID) {
+          throw new Error(`Room ID is missing for room: ${room.RoomID}`);
+        }
+  
+        const bookingDetails = {
+          BookingID: null, // Set by backend
+          FacultyName: facultyName,
+          FacultyID: facultyID,
+          CourseCode: courseCode,
+          Purpose: sessionType,
+          ResourceNeeds: resourceNeeds,
+          Date: formValues.date,
+          FromTime: formValues.fromTime,
+          ToTime: formValues.toTime,
+          RoomID: room.RoomID,
+          Status: "Pending",
+        };
+  
+        return fetch("http://localhost:8000/api/bookings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bookingDetails),
+        }).then(async (response) => {
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Failed to book room ${room.RoomID}: ${errorData.error || 'Unknown error'}`);
+          }
+          return response.json();
+        });
+      });
+  
+      const results = await Promise.all(bookingRequests);
+      console.log("Booking responses:", results);
+  
+      setSelectedRooms([]);
+      setFacultyName("");
+      setFacultyID("");
+      setCourseCode("");
+      setSessionType("");
+      setResourceNeeds("");
+      setShowPopup(false);
+      setErrorMessage(""); // Clear error message if successful
+    } catch (error) {
+      console.error("Error booking slots:", error);
+      setErrorMessage(error.message || "An error occurred while booking slots.");
+    }
   };
+  
 
   const handleOpenPopup = () => {
     if (selectedRooms.length > 0) {
@@ -207,6 +271,8 @@ function VenueDetails({
                   </label>
                   <input
                     type="text"
+                    value={facultyName}
+                    onChange={(e) => setFacultyName(e.target.value)}
                     placeholder="Enter Faculty Name"
                     className="p-2 border-2 text-lg text-sky-500 font-semibold placeholder:text-gray-400 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-sky-500"
                   />
@@ -219,6 +285,8 @@ function VenueDetails({
                   </label>
                   <input
                     type="text"
+                    value={facultyID}
+                    onChange={(e) => setFacultyID(e.target.value)}
                     placeholder="Enter Faculty ID"
                     className="p-2 border-2 text-lg text-sky-500 font-semibold placeholder:text-gray-400 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-sky-500"
                   />
@@ -232,6 +300,8 @@ function VenueDetails({
                 </label>
                 <input
                   type="text"
+                  value={courseCode}
+                  onChange={(e) => setCourseCode(e.target.value)}
                   placeholder="Enter Course Code"
                   className="p-2 border-2 text-lg text-sky-500 font-semibold placeholder:text-gray-400 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
@@ -244,6 +314,8 @@ function VenueDetails({
                 </label>
                 <input
                   type="text"
+                  value={sessionType}
+                  onChange={(e) => setSessionType(e.target.value)}
                   placeholder="Enter the purpose of booking (e.g., Workshop,Lab slot, Academic session, etc.)"
                   className="p-2 border-2 text-lg text-sky-500 font-semibold placeholder:text-gray-400 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
@@ -256,6 +328,8 @@ function VenueDetails({
                 </label>
                 <textarea
                   rows="3"
+                  value={resourceNeeds}
+                  onChange={(e) => setResourceNeeds(e.target.value)}
                   placeholder="Enter any equipment or resource requirements (e.g., projectors, lab kits)"
                   className="p-2 border-2 text-lg text-sky-500 font-semibold placeholder:text-gray-400 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-sky-500"
                 ></textarea>

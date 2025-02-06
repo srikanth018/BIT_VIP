@@ -10,7 +10,11 @@ const Booking = sequelize.define('Booking', {
         type: DataTypes.STRING(50),
         allowNull: false
     },
-    UserID: {
+    FacultyName: {
+        type: DataTypes.STRING(50),
+        allowNull: false
+    },
+    FacultyID: {
         type: DataTypes.STRING(50),
         allowNull: false
     },
@@ -18,16 +22,24 @@ const Booking = sequelize.define('Booking', {
         type: DataTypes.DATE,
         allowNull: false
     },
-    StartTime: {
+    FromTime: {
         type: DataTypes.TIME,
         allowNull: false
     },
-    EndTime: {
+    ToTime: {
         type: DataTypes.TIME,
         allowNull: false
     },
     Purpose: {
         type: DataTypes.TEXT,
+        allowNull: false
+    },
+    ResourceNeeds: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    CourseCode:{
+        type: DataTypes.STRING(50),
         allowNull: false
     },
     Status: {

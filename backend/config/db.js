@@ -11,6 +11,7 @@ const sequelize = new Sequelize(
         dialect: 'mysql',                         // Database type (MySQL in this case)
         logging: false                            // Disable logging for cleaner output
     }
+    
 );
 
 // Test the database connection
