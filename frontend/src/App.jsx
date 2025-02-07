@@ -7,9 +7,10 @@ import Sidebar from "./Components/Helpers/Sidebar";
 import Login from "./Components/Login";
 import BookSlots from "./Components/BookSlots/BookSlots.jsx";
 import Bookings from "./Components/My_Bookings/Bookings.jsx";
+import ManageBookings from "./Components/Admin/ManageBookings/ManageBookings.jsx";
 
 function App() {
-  const userRole = "faculty";
+  const userRole = "admin";
 
   return (
     <Router>
@@ -30,6 +31,7 @@ function App() {
                   <Route path="/profile" element={<div>Profile Content</div>} />
                   <Route path="/book-slot" element={<BookSlots/> } />
                   <Route path="/my-bookings" element={<Bookings/>} />
+                  <Route path="/manage-bookings" element={<ManageBookings />} />
                 </Routes>
               </div>
             </div>
