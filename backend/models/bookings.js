@@ -43,8 +43,12 @@ const Booking = sequelize.define('Booking', {
         allowNull: false
     },
     Status: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING(50),
         allowNull: false
+    },
+    UpdatedBy: {
+        type: DataTypes.STRING(50),
+        allowNull: true
     }
 }, {
     tableName: 'Bookings',

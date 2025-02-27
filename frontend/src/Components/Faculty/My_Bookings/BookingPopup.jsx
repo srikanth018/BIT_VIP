@@ -28,14 +28,15 @@ const BookingPopup = ({ booking, onClose, isClosing }) => {
               : "border-sky-500"
           }`}
         >
-          <h2 className={`font-semibold py-2 ${
-                    `${booking.Status}` === "Approved"
-                        ? "text-green-500"
-                        : `${booking.Status}` === "Rejected"
-                        ? "text-red-500"
-                        : "text-sky-500"
-
-                } text-2xl text-center font-bold mb-6`}>
+          <h2
+            className={`font-semibold py-2 ${
+              `${booking.Status}` === "Approved"
+                ? "text-green-500"
+                : `${booking.Status}` === "Rejected"
+                ? "text-red-500"
+                : "text-sky-500"
+            } text-2xl text-center font-bold mb-6`}
+          >
             {booking.RoomID}
           </h2>
           <table className="w-full text-gray-700">
@@ -67,17 +68,23 @@ const BookingPopup = ({ booking, onClose, isClosing }) => {
                 <td className="font-semibold py-2">Resource Needs:</td>
                 <td className="py-2">{booking.ResourceNeeds}</td>
               </tr>
-
+              {(booking.Status === 'Approved' || booking.Status === 'Rejected') && <tr>
+                <td className="font-semibold py-2">Status Updated By</td>
+                <td className="py-2">{booking.UpdatedBy}</td>
+              </tr>}
               <tr>
                 <td className="font-semibold py-2">Status:</td>
-                <td className={`font-semibold py-2 ${
+                <td
+                  className={`font-semibold py-2 ${
                     `${booking.Status}` === "Approved"
-                        ? "text-green-500"
-                        : `${booking.Status}` === "Rejected"
-                        ? "text-red-500"
-                        : "text-sky-500"
-
-                }`}>{booking.Status}</td>
+                      ? "text-green-500"
+                      : `${booking.Status}` === "Rejected"
+                      ? "text-red-500"
+                      : "text-sky-500"
+                  }`}
+                >
+                  {booking.Status}
+                </td>
               </tr>
             </tbody>
           </table>
