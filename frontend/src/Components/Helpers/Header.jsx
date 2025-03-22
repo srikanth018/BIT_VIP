@@ -1,6 +1,7 @@
 import React from "react";
 import { MdNotifications, MdPerson, MdSettings } from "react-icons/md";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Header = ({ userRole }) => {
   const location = useLocation();
@@ -11,6 +12,17 @@ const Header = ({ userRole }) => {
     return path.startsWith(`/${name}`)
       ? "text-sky-500 font-bold"
       : "text-gray-600";
+  };
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    // Redirect to the login page
+    navigate("/");
   };
 
   return (
@@ -36,7 +48,11 @@ const Header = ({ userRole }) => {
         </a>
 
         {/* Logout */}
-        <a href="/logout" className="flex items-center text-red-500">
+        <a
+          href="/logout"
+          className="flex items-center text-red-500"
+          onClick={handleLogout}
+        >
           <MdSettings className="mr-2 text-3xl" />
           Logout
         </a>

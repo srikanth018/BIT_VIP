@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import BookingPopup from "./BookingPopup"; // Import the popup component
 
 function Bookings() {
-  const facultyID = "CS124";
+  // const facultyID = "CS124";
+  const facultyID = JSON.parse(localStorage.getItem("user")).id;
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showPopup, setShowPopup] = useState(false);

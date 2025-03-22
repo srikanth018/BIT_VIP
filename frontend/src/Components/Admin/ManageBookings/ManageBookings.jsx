@@ -5,8 +5,7 @@ function ManageBookings() {
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [filters, setFilters] = useState({ date: "", room: "", status: "" });
 
-  // const FacultyId = localStorage.getItem("FacultyId");
-  const FacultyId = 'CS125';
+  const FacultyId = JSON.parse(localStorage.getItem("user")).id;
 
   useEffect(() => {
     fetchBookings();
@@ -111,13 +110,13 @@ function ManageBookings() {
           </select>
         </div>
       </div>
-      <div className="flex flex-wrap justify-between bg-white p-6 rounded-lg shadow-lg">
+      <div className="grid grid-cols-5 gap-4 bg-white p-6 rounded-lg shadow-lg">
         {filteredBookings.length > 0 ? (
           filteredBookings.map((booking) => (
             <div
               key={booking.BookingID}
               onClick={() => handleCardClick(booking)}
-              className={`p-3 rounded-lg w-[calc(20%-16px)] min-w-[200px] shadow-md border border-gray-300 cursor-pointer ${
+              className={`p-3 rounded-lg shadow-md border border-gray-300 cursor-pointer ${
                 booking.Status === "Approved"
                   ? "bg-green-100 border-green-400 text-green-700"
                   : booking.Status === "Rejected"

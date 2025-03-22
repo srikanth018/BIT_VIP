@@ -6,6 +6,9 @@ const roomRoutes = require('./routes/v1/roomRoutes');
 const bookingRoutes = require('./routes/v1/bookingsRoutes');
 const conflictRoutes = require('./routes/v1/conflictRoutes');
 const adminDashboardRoutes = require('./routes/v1/adminDashboardRoutes');
+const authRouter = require('./routes/v1/authRouter');
+const userRoutes = require('./routes/v1/userRoutes');
+
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -17,7 +20,8 @@ app.use('/api', roomRoutes);
 app.use('/api', bookingRoutes);
 app.use("/api", conflictRoutes);
 app.use("/api", adminDashboardRoutes);
-
+app.use('/api', authRouter);
+app.use("/api", userRoutes);
 
 
 
