@@ -129,24 +129,6 @@ function ConflictResolution() {
     }
   };
 
-  const [clickedConflictTable1, setClickedConflictTable1] = useState(false);
-
-  const [clickedConflictTable2, setClickedConflictTable2] = useState(false);
-
-  const handleConflictClick = () => {
-    if (clickedConflictTable1 === false) {
-      setClickedConflictTable1(true);
-    } else {
-      setClickedConflictTable1(false);
-    }
-    if (clickedConflictTable2 === false) {
-      setClickedConflictTable2(true);
-    } else {
-      setClickedConflictTable2(false);
-    }
-
-    console.log(clickedConflictTable1);
-  };
 
   return (
     <main className="px-6 pt-3 min-h-screen">
@@ -226,14 +208,18 @@ function ConflictResolution() {
                 </h2>
                 <div
                   className={`bg-gray-100 p-4 rounded-lg mb-4 
-                ${clickedConflictTable1 ? "bg-green-100" : ""}`}
-                  onClick={() => handleConflictClick()}
+                `}
+                  
                 >
                   <table className="w-full text-gray-700">
                     <tbody>
                       <tr>
                         <td className="font-semibold py-2">Faculty Name:</td>
                         <td className="py-2">{selectedConflict.FacultyName}</td>
+                      </tr>
+                      <tr>
+                        <td className="font-semibold py-2">Room ID</td>
+                        <td className="py-2">{selectedConflict.RoomID}</td>
                       </tr>
                       <tr>
                         <td className="font-semibold py-2">Course Code:</td>
@@ -295,8 +281,8 @@ function ConflictResolution() {
                       key={booking.BookingID}
                       className={`bg-gray-100 p-4 rounded-lg mb-4 
                       
-                      ${clickedConflictTable2 ? "" : "bg-green-100"}`}
-                      onClick={() => handleConflictClick()}
+                      `}
+                      
                     >
                       <table className="w-full text-gray-700">
                         <tbody>
@@ -306,6 +292,10 @@ function ConflictResolution() {
                             </td>
                             <td className="py-2">{booking.FacultyName}</td>
                           </tr>
+                          <tr>
+                        <td className="font-semibold py-2">Room ID</td>
+                        <td className="py-2">{booking.RoomID}</td>
+                      </tr>
                           <tr>
                             <td className="font-semibold py-2">Course Code:</td>
                             <td className="py-2">{booking.CourseCode}</td>

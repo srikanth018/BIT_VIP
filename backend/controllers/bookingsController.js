@@ -51,11 +51,6 @@ exports.createBooking = async (req, res) => {
     }
 
 
-
-
-    // Check if the new BookingID already exists in the database
-
-
     if (existingBooking) {
       console.log("Duplicate BookingID found:", newBID); // Debugging
       await transaction.rollback(); // Rollback the transaction

@@ -7,7 +7,9 @@ function VenueDetails({
   selectedType,
   capacity,
 }) {
-  const userTeam = "placement";
+  const userTeam = localStorage.getItem("user")
+  ? JSON.parse(localStorage.getItem("user")).team
+  : null;
   // const userTeam = "others";
 
   const [availableRooms, setAvailableRooms] = useState([]);
@@ -38,6 +40,7 @@ function VenueDetails({
       );
       const data = await response.json();
       setBookedRooms(data.length > 0 ? data : []);
+      console.log("Booked rooms:", data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -96,7 +99,6 @@ function VenueDetails({
     }
   };
 
-  // Handle booking slots
   const handleBookSlots = async () => {
     if (
       !facultyName ||
@@ -111,12 +113,12 @@ function VenueDetails({
       setErrorMessage("Please fill in all required fields.");
       return;
     }
-
+  
     if (selectedRooms.length === 0) {
       setErrorMessage("Please select at least one room.");
       return;
     }
-
+  
     try {
       const selectedVenues = selectedRooms.filter(
         (room) => !bookedRooms.includes(room.RoomID)
@@ -124,9 +126,9 @@ function VenueDetails({
       const conflictedVenues = selectedRooms.filter((room) =>
         bookedRooms.includes(room.RoomID)
       );
-
-      // Book available rooms
-      const bookingRequests = selectedVenues.map((room) => {
+  
+      // Book available rooms sequentially
+      for (const room of selectedVenues) {
         const bookingDetails = {
           FacultyName: facultyName,
           FacultyID: facultyID,
@@ -139,26 +141,27 @@ function VenueDetails({
           RoomID: room.RoomID,
           Status: "Pending",
         };
-
-        return fetch("http://localhost:8000/api/bookings", {
+  
+        const response = await fetch("http://localhost:8000/api/bookings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(bookingDetails),
-        }).then(async (response) => {
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(
-              `Failed to book room ${room.RoomID}: ${
-                errorData.error || "Unknown error"
-              }`
-            );
-          }
-          return response.json();
         });
-      });
-
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            `Failed to book room ${room.RoomID}: ${
+              errorData.error || "Unknown error"
+            }`
+          );
+        }
+  
+        console.log(`Room ${room.RoomID} booked successfully.`);
+      }
+  
       // Store conflicted rooms
-      const conflictRequests = conflictedVenues.map((room) => {
+      for (const room of conflictedVenues) {
         const conflictDetails = {
           FacultyName: facultyName,
           FacultyID: facultyID,
@@ -171,27 +174,26 @@ function VenueDetails({
           RoomID: room.RoomID,
           Status: "Conflict",
         };
-
-        return fetch("http://localhost:8000/api/conflicts", {
+  
+        const response = await fetch("http://localhost:8000/api/conflicts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(conflictDetails),
-        }).then(async (response) => {
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(
-              `Failed to store conflict for room ${room.RoomID}: ${
-                errorData.error || "Unknown error"
-              }`
-            );
-          }
-          return response.json();
         });
-      });
-
-      const results = await Promise.all([...bookingRequests, ...conflictRequests]);
-      console.log("Booking and conflict responses:", results);
-
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            `Failed to store conflict for room ${room.RoomID}: ${
+              errorData.error || "Unknown error"
+            }`
+          );
+        }
+  
+        console.log(`Conflict for room ${room.RoomID} stored successfully.`);
+      }
+  
+      // Reset form and state
       setSelectedRooms([]);
       setFacultyName("");
       setFacultyID("");
