@@ -15,5 +15,7 @@ router.get("/getAllBookingIDs", bookingsController.getAllBookingIDs);
     
 router.get("/getBookingByBookedId/:id", bookingsController.getBookingByBookedId);
 router.get("/getAllBookingIDsForConflict", bookingsController.getAllBookingIDsForConflict);
+router.put('/bookings/:BookingID', bookingsController.updateBooking);
+
 
 module.exports = router;

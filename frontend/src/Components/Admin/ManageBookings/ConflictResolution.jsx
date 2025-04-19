@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 function ConflictResolution() {
   const [conflicts, setConflicts] = useState([]);
@@ -7,6 +8,10 @@ function ConflictResolution() {
   const [conflictingBookings, setConflictingBookings] = useState([]);
   const [selectedConflict, setSelectedConflict] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [editMode, setEditMode] = useState({
+    selectedConflict: false,
+    conflictingBookingId: null,
+  });
 
   useEffect(() => {
     fetchConflicts();
@@ -42,15 +47,12 @@ function ConflictResolution() {
       }
 
       const bookingIds = await bookingIdsResponse.json();
-      console.log(bookingIds);
-
-      // Extract only the BookingID values
       const bookingIdList = bookingIds
         .map((booking) =>
           booking.RoomID === conflict.RoomID ? booking.BookingID : null
         )
         .filter((id) => id !== null);
-      console.log(bookingIdList);
+
       const bookingsDetails = [];
       for (const id of bookingIdList) {
         try {
@@ -90,6 +92,7 @@ function ConflictResolution() {
 
   const handleCardClick = async (conflict) => {
     setSelectedConflict(conflict);
+    console.log(conflict, "jhgkjj");
     await fetchConflictingBookings(conflict);
     setShowPopup(true);
   };
@@ -100,35 +103,100 @@ function ConflictResolution() {
     setConflictingBookings([]);
   };
 
+  const toggleEditMode = (section, bookingId = null) => {
+    setEditMode({
+      selectedConflict:
+        section === "selectedConflict" ? !editMode.selectedConflict : false,
+      conflictingBookingId: section === "conflictingBooking" ? bookingId : null,
+    });
+  };
+
+  const [editedValues, setEditedValues] = useState({});
+
+  const handleResolveConflict = async (conflictId) => {
+    try {
+      // Prepare the data to send
+      const resolveData = {
+        selectedConflict,
+        conflictingBookings,
+      };
+
+      // Call the resolve endpoint
+      const response = await axios.post(
+        `http://localhost:8000/api/conflicts/${conflictId}/resolve`,
+        resolveData
+      );
+
+      if (response.status === 200) {
+        alert("Conflict resolved successfully!");
+        handleClosePopup(); // Close the popup
+      }
+    } catch (error) {
+      console.error("Error resolving conflict:", error);
+      alert("Failed to resolve conflict.");
+    }
+  };
+  const handleSaveSelectedConflict = async () => {
+    try {
+      // Prepare the updated data
+      const updatedConflict = {
+        ...selectedConflict,
+        ...editedValues.selectedConflict,
+      };
+
+      // Call the update endpoint
+      const response = await axios.put(
+        `http://localhost:8000/api/conflicts/${selectedConflict.id}`,
+        updatedConflict
+      );
+
+      if (response.status === 200) {
+        // Update the local state with the new data
+        setSelectedConflict(updatedConflict);
+        toggleEditMode("selectedConflict"); // Exit edit mode
+        alert("Conflict updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating conflict:", error);
+      alert("Failed to update conflict.");
+    }
+  };
+
+  const handleSaveConflictingBooking = async (bookingId) => {
+    try {
+      // Prepare the updated data
+      const updatedBooking = {
+        ...conflictingBookings.find((b) => b.BookingID === bookingId),
+        ...editedValues.conflictingBookings?.[bookingId],
+      };
+
+      // Call the update endpoint
+      const response = await axios.put(
+        `http://localhost:8000/api/bookings/${bookingId}`,
+        updatedBooking
+      );
+
+      if (response.status === 200) {
+        // Update the local state with the new data
+        const updatedBookings = conflictingBookings.map((b) =>
+          b.BookingID === bookingId ? updatedBooking : b
+        );
+        setConflictingBookings(updatedBookings);
+        toggleEditMode("conflictingBooking", null); // Exit edit mode
+        alert("Booking updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating booking:", error);
+      alert("Failed to update booking.");
+    }
+  };
+
   const convertTo12HrFormat = (time) => {
     const [hour, minute] = time.split(":");
     const period = hour >= 12 ? "PM" : "AM";
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minute} ${period}`;
   };
-
-  const handleResolveConflict = async (conflictId) => {
-    try {
-      const response = await fetch(
-        `http://localhost:8000/api/conflicts/${conflictId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ Status: "Resolved" }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to resolve conflict");
-      }
-
-      fetchConflicts();
-      handleClosePopup();
-    } catch (error) {
-      console.error("Error resolving conflict:", error);
-    }
-  };
-
 
   return (
     <main className="px-6 pt-3 min-h-screen">
@@ -191,86 +259,100 @@ function ConflictResolution() {
 
       {showPopup && selectedConflict && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-2xl max-w-4xl w-full mx-4 transform transition-all duration-300 ease-in-out">
+          {/* Scrollable container */}
+          <div className="bg-white p-8 rounded-lg shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-in-out">
             <h1 className="text-3xl text-sky-600 font-semibold font-cambria text-center mb-6">
               {selectedConflict.RoomID}
             </h1>
+
+            {/* Flex container for the two sections */}
             <div className="flex gap-8">
+              {/* Selected Conflict Section */}
               <div className="w-1/2">
-                <h2
-                  className={`font-semibold py-2 ${
-                    selectedConflict.Status === "Resolved"
-                      ? "text-green-500"
-                      : "text-red-500"
-                  } text-2xl text-center font-bold mb-6`}
-                >
-                  Selected Conflict
-                </h2>
-                <div
-                  className={`bg-gray-100 p-4 rounded-lg mb-4 
-                `}
-                  
-                >
+                <div className="flex justify-between items-center">
+                  <h2
+                    className={`font-semibold py-2 ${
+                      selectedConflict.Status === "Resolved"
+                        ? "text-green-500"
+                        : "text-red-500"
+                    } text-2xl text-center font-bold mb-6`}
+                  >
+                    Selected Conflict
+                  </h2>
+                </div>
+                <div className={`bg-gray-100 p-4 rounded-lg mb-4`}>
+                  <button
+                    onClick={() => toggleEditMode("selectedConflict")}
+                    className="text-gray-500 hover:text-gray-700 float-right"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      />
+                    </svg>
+                  </button>
                   <table className="w-full text-gray-700">
                     <tbody>
-                      <tr>
-                        <td className="font-semibold py-2">Faculty Name:</td>
-                        <td className="py-2">{selectedConflict.FacultyName}</td>
-                      </tr>
-                      <tr>
-                        <td className="font-semibold py-2">Room ID</td>
-                        <td className="py-2">{selectedConflict.RoomID}</td>
-                      </tr>
-                      <tr>
-                        <td className="font-semibold py-2">Course Code:</td>
-                        <td className="py-2">{selectedConflict.CourseCode}</td>
-                      </tr>
-                      <tr>
-                        <td className="font-semibold py-2">Date:</td>
-                        <td className="py-2">
-                          {selectedConflict.Date.slice(0, 10)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="font-semibold py-2">Time:</td>
-                        <td className="py-2">
-                          {convertTo12HrFormat(selectedConflict.FromTime)} -{" "}
-                          {convertTo12HrFormat(selectedConflict.ToTime)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="font-semibold py-2">Purpose:</td>
-                        <td className="py-2">{selectedConflict.Purpose}</td>
-                      </tr>
-                      <tr>
-                        <td className="font-semibold py-2">Resource Needs:</td>
-                        <td className="py-2">
-                          {selectedConflict.ResourceNeeds}
-                        </td>
-                      </tr>
-                      {(selectedConflict.Status === 'Approved' || selectedConflict.Status === 'Rejected') && <tr>
-                        <td className="font-semibold py-2">
-                          Status Updated By
-                        </td>
-                        <td className="py-2">{selectedConflict.UpdatedBy}</td>
-                      </tr>}
-                      <tr>
-                        <td className="font-semibold py-2">Status:</td>
-                        <td
-                          className={`font-semibold py-2 ${
-                            selectedConflict.Status === "Resolved"
-                              ? "text-green-500"
-                              : "text-red-500"
-                          }`}
-                        >
-                          {selectedConflict.Status}
-                        </td>
-                      </tr>
+                      {Object.entries(selectedConflict).map(([key, value]) => (
+                        <tr key={key}>
+                          <td className="font-semibold py-2">{key}:</td>
+                          <td className="py-2">
+                            {editMode.selectedConflict ? (
+                              <input
+                                type="text"
+                                defaultValue={value}
+                                className="w-full px-2 py-1 border rounded"
+                                onChange={(e) =>
+                                  setEditedValues((prev) => ({
+                                    ...prev,
+                                    selectedConflict: {
+                                      ...prev.selectedConflict,
+                                      [key]: e.target.value,
+                                    },
+                                  }))
+                                }
+                              />
+                            ) : (
+                              value
+                            )}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
+
+                {editMode.selectedConflict && (
+                  <div className="flex justify-end mt-4">
+                    <button
+                      onClick={handleSaveSelectedConflict}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg mr-2"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditedValues({}); // Reset edited values
+                        toggleEditMode("selectedConflict");
+                      }}
+                      className="px-4 py-2 bg-gray-500 text-white rounded-lg"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
               </div>
 
+              {/* Conflicting Bookings Section */}
               <div className="w-1/2">
                 <h2 className="font-semibold py-2 text-2xl text-center mb-6 text-sky-500">
                   Conflicting Bookings
@@ -279,62 +361,70 @@ function ConflictResolution() {
                   conflictingBookings.map((booking) => (
                     <div
                       key={booking.BookingID}
-                      className={`bg-gray-100 p-4 rounded-lg mb-4 
-                      
-                      `}
-                      
+                      className={`bg-gray-100 p-4 rounded-lg mb-4`}
                     >
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold">
+                          Booking ID: {booking.BookingID}
+                        </h3>
+                        <button
+                          onClick={() =>
+                            toggleEditMode(
+                              "conflictingBooking",
+                              booking.BookingID
+                            )
+                          }
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
                       <table className="w-full text-gray-700">
                         <tbody>
-                          <tr>
-                            <td className="font-semibold py-2">
-                              Faculty Name:
-                            </td>
-                            <td className="py-2">{booking.FacultyName}</td>
-                          </tr>
-                          <tr>
-                        <td className="font-semibold py-2">Room ID</td>
-                        <td className="py-2">{booking.RoomID}</td>
-                      </tr>
-                          <tr>
-                            <td className="font-semibold py-2">Course Code:</td>
-                            <td className="py-2">{booking.CourseCode}</td>
-                          </tr>
-                          <tr>
-                            <td className="font-semibold py-2">Date:</td>
-                            <td className="py-2">
-                              {booking.Date.slice(0, 10)}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="font-semibold py-2">Time:</td>
-                            <td className="py-2">
-                              {convertTo12HrFormat(booking.FromTime)} -{" "}
-                              {convertTo12HrFormat(booking.ToTime)}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="font-semibold py-2">Purpose:</td>
-                            <td className="py-2">{booking.Purpose}</td>
-                          </tr>
-                          <tr>
-                            <td className="font-semibold py-2">
-                              Resource Needs:
-                            </td>
-                            <td className="py-2">{booking.ResourceNeeds}</td>
-                          </tr>
-                          {(booking.Status === 'Approved' || booking.Status === 'Rejected') && <tr>
-                            <td className="font-semibold py-2">
-                              Status Updated By
-                            </td>
-                            <td className="py-2">{booking.UpdatedBy }</td>
-                          </tr>}
-                          <tr>
-                            <td className="font-semibold py-2">Status:</td>
-                            <td className="py-2 text-red-500 font-semibold">
-                              {booking.Status}
-                            </td>
-                          </tr>
+                          {Object.entries(booking).map(([key, value]) => (
+                            <tr key={key}>
+                              <td className="font-semibold py-2">{key}:</td>
+                              <td className="py-2">
+                                {editMode.conflictingBookingId ===
+                                booking.BookingID ? (
+                                  <input
+                                    type="text"
+                                    defaultValue={value}
+                                    className="w-full px-2 py-1 border rounded"
+                                    onChange={(e) =>
+                                      setEditedValues((prev) => ({
+                                        ...prev,
+                                        conflictingBookings: {
+                                          ...prev.conflictingBookings,
+                                          [booking.BookingID]: {
+                                            ...prev.conflictingBookings?.[
+                                              booking.BookingID
+                                            ],
+                                            [key]: e.target.value,
+                                          },
+                                        },
+                                      }))
+                                    }
+                                  />
+                                ) : (
+                                  value
+                                )}
+                              </td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>
@@ -347,12 +437,32 @@ function ConflictResolution() {
               </div>
             </div>
 
+            {editMode.conflictingBookingId && (
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() =>
+                    handleSaveConflictingBooking(editMode.conflictingBookingId)
+                  }
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg mr-2"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => {
+                    setEditedValues({}); // Reset edited values
+                    toggleEditMode("conflictingBooking", null);
+                  }}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
             {selectedConflict.Status === "Conflict" && (
               <div className="flex justify-end mt-6">
                 <button
-                  onClick={() =>
-                    handleResolveConflict(selectedConflict.ConflictID)
-                  }
+                  onClick={() => handleResolveConflict(selectedConflict.id)}
                   className="px-6 py-2 bg-green-200 border border-green-500 font-semibold text-green-600 rounded-lg hover:bg-green-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
                   Resolve Conflict

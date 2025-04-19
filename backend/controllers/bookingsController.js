@@ -22,43 +22,39 @@ exports.createBooking = async (req, res) => {
 
     // Start a transaction
     transaction = await Bookings.sequelize.transaction();
+    console.log("Transaction started");
 
     // Fetch the latest BookingID within the transaction
-    // Fetch the latest BookingID and lock the row for update
     const latestBooking = await Bookings.findOne({
-      order: [['BookingID', 'DESC']],
+      order: [
+        [Bookings.sequelize.literal('CAST(SUBSTRING(BookingID, 4) AS UNSIGNED)'), 'DESC'] // Sort numerically
+      ],
       attributes: ['BookingID'],
-      lock: Transaction.LOCK.UPDATE, // Lock for update to avoid concurrency
+      lock: true, // Lock the row for update
       transaction,
     });
+    console.log("Latest Booking:", latestBooking);
 
     // Generate new BookingID
-    let newBID = "BID1";
+    let newBID = "BID1"; // Default if no bookings exist
     if (latestBooking && latestBooking.BookingID) {
       const lastNumericId = parseInt(latestBooking.BookingID.replace("BID", ""), 10);
-      newBID = `BID${lastNumericId + 1}`;
+      newBID = `BID${lastNumericId + 1}`; // Increment the numeric part
     }
+    console.log("Generated BookingID:", newBID);
 
-    // Check if the new BookingID already exists and handle it
+    // Check if the new BookingID already exists
     const existingBooking = await Bookings.findOne({
       where: { BookingID: newBID },
       transaction,
     });
+    console.log("Existing Booking:", existingBooking);
 
     if (existingBooking) {
-      // Retry logic to generate a new BookingID
-      return createBooking(req, res); // Recursively try again (or handle accordingly)
-    }
-
-
-    if (existingBooking) {
-      console.log("Duplicate BookingID found:", newBID); // Debugging
-      await transaction.rollback(); // Rollback the transaction
+      console.log("Duplicate BookingID found:", newBID);
+      await transaction.rollback();
       return res.status(400).json({ error: `Duplicate BookingID found: ${newBID}` });
     }
-
-    // Log the new BookingID before creating the booking
-    console.log("BookingID to be used:", newBID); // Debugging
 
     // Create the booking within the transaction
     const bookingDetails = {
@@ -74,26 +70,31 @@ exports.createBooking = async (req, res) => {
       ToTime,
       Status: "Pending",
     };
+    console.log("Booking Details:", bookingDetails);
 
     const newBooking = await Bookings.create(bookingDetails, { transaction });
+    console.log("Booking created successfully:", newBooking);
 
     // Commit the transaction
     await transaction.commit();
+    console.log("Transaction committed successfully");
 
     res.status(201).json(newBooking);
   } catch (error) {
     console.error("Error creating booking:", error);
 
     // Rollback the transaction in case of an error
-    if (transaction) await transaction.rollback();
+    if (transaction) {
+      await transaction.rollback();
+      console.log("Transaction rolled back");
+    }
 
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({ error: `Duplicate BookingID found: ${req.body.BookingID}` });
+    if (error.name === 'SequelizeDatabaseError' && error.parent.code === 'ER_LOCK_WAIT_TIMEOUT') {
+      return res.status(500).json({ error: "Lock wait timeout exceeded. Please try again." });
     }
     res.status(500).json({ message: "Error creating booking", error: error.message });
   }
 };
-
 
 exports.getBookingsByFacultyID = async (req, res) => {
     const  FacultyID  = req.params.id;
@@ -371,5 +372,23 @@ exports.getBookingByBookedId = async (req, res) => {
   } catch (error) {
     console.error("Error fetching booking:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.updateBooking = async (req, res) => {
+  const { BookingID } = req.params;
+  const updates = req.body;
+
+  try {
+    const booking = await Bookings.findOne({ where: { BookingID } });
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    await booking.update(updates);
+    res.status(200).json(booking);
+  } catch (error) {
+    console.error("Error updating booking:", error);
+    res.status(500).json({ error: "Error updating booking" });
   }
 };

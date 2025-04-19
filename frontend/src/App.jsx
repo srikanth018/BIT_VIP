@@ -15,6 +15,9 @@ import Sidebar from "./Components/Helpers/Sidebar";
 import Login from "./Components/Login";
 import Profile from "./Components/Helpers/Profile.jsx";
 import UserManagement from "./Components/Admin/User/UserManagement.jsx";
+import ReportsAndAnalytics from "./Components/Admin/ReportsAndAnalytics/ReportsAndAnalytics.jsx";
+import HelpAndSupport from "./Components/Helpers/HelpAndSupport.jsx";
+import Logout from "./Components/Helpers/Logout.jsx";
 
 function App() {
   const userRole = localStorage.getItem("user")
@@ -56,6 +59,9 @@ function App() {
                     <Route path="/manage-rooms" element={<ManageRooms />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/user-management" element={<UserManagement/>} />
+                    <Route path="/reports" element={<ReportsAndAnalytics/>} />
+                    <Route path="/help" element={<HelpAndSupport/>} />
+                    <Route path="/logout-page" element={<Logout />} />
                   </Routes>
                 </div>
               </div>

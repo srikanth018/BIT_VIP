@@ -7,24 +7,23 @@ import {
   FaUsers,
   FaWrench,
 } from "react-icons/fa";
-import {
-  MdDashboard,
-  MdNotifications,
-  MdPerson,
-  MdSettings,
-} from "react-icons/md";
+import { MdDashboard, MdPerson, MdSettings } from "react-icons/md";
 import { useLocation } from "react-router-dom";
 
 const Sidebar = ({ userRole }) => {
   const location = useLocation();
   const [active, setActive] = useState("");
   const [activeSubTask, setActiveSubTask] = useState("");
+  
+
+  
 
   useEffect(() => {
     const path = location.pathname;
 
     if (path === "/dashboard") {
       setActive("dashboard");
+      
     } else if (path.startsWith("/profile")) {
       setActive("profile");
     } else if (path.startsWith("/notifications")) {
@@ -59,7 +58,7 @@ const Sidebar = ({ userRole }) => {
     return active === name ? "bg-sky-100 text-sky-600" : "text-gray-600";
   };
 
-  return ( 
+  return (
     <div className="w-80  bg-white text-black ">
       <div className="p-4 my-2 text-center font-bold text-2xl text-sky-600">
         BIT-VIP
@@ -160,7 +159,7 @@ const Sidebar = ({ userRole }) => {
                 My Bookings
               </div>
             </a>
-            <a
+            {/* <a
               href="/resource-requests"
               className={`block py-2 px-4 rounded ${getActiveClass(
                 "resource-requests"
@@ -170,7 +169,7 @@ const Sidebar = ({ userRole }) => {
                 <FaWrench className="mr-3" />
                 Resource Requests
               </div>
-            </a>
+            </a> */}
           </div>
         )}
 
@@ -185,7 +184,7 @@ const Sidebar = ({ userRole }) => {
               My Profile
             </div>
           </a>
-          <a
+          {/* <a
             href="/notifications"
             className={`block py-2 px-4 rounded ${getActiveClass(
               "notifications"
@@ -195,7 +194,7 @@ const Sidebar = ({ userRole }) => {
               <MdNotifications className="mr-3" />
               Notifications
             </div>
-          </a>
+          </a> */}
         </div>
 
         {/* Optional Components moved to the end */}
@@ -210,7 +209,7 @@ const Sidebar = ({ userRole }) => {
             </div>
           </a>
           <a
-            href="/logout"
+            href="/logout-page"
             className={`block py-2 px-4 rounded ${getActiveClass("logout")}`}
           >
             <div className="flex items-center">
